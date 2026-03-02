@@ -8,43 +8,48 @@
 }
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-body, html {
-    width: 100%; height: 100%;
-    background-color: var(--bg);
-    color: var(--fg);
-    font-family: 'Inter', sans-serif;
-    overflow-x: hidden;
-}
+body, html { width: 100%; height: 100%; background-color: var(--bg); color: var(--fg); font-family: 'Inter', sans-serif; overflow-x: hidden; }
 
 /* Loading Overlay */
-.loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.8s ease-out; }
-.loading-overlay.hidden { opacity: 0; pointer-events: none; }
-.loading-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 4vw, 3rem); letter-spacing: 0.3em; color: var(--fg); animation: loadingPulse 1.5s ease-in-out infinite; }
+.loading-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.5s ease-out 0.2s; pointer-events: none; }
+.loading-overlay.hidden { opacity: 0; }
+.loading-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.5rem, 4vw, 3rem); font-weight: 300; letter-spacing: 0.3em; color: var(--fg); opacity: 0; animation: loadingPulse 1.5s ease-in-out infinite; }
 @keyframes loadingPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
 /* Canvas */
-#canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+#canvas { display: block; position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
-/* Initial Dragon Wipe */
-#dragon-wipe { position: fixed; inset: 0; background: #000; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 1.5s ease-out; }
-#dragon-wipe.active { opacity: 1; pointer-events: all; }
+/* ==================== DRAGON TRANSITION (From Provided Code) ==================== */
+.dragon-wipe {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 200; pointer-events: none; display: flex; align-items: center;
+}
+.dragon-trail {
+    position: absolute; top: 0; right: 0; width: 100vw; height: 100%;
+    background: #000000; transform: scaleX(0); transform-origin: left center;
+}
+.dragon-body {
+    position: relative; width: 300px; height: 300px; flex-shrink: 0; z-index: 2;
+    transform: translateX(100vw); opacity: 0;
+}
+.dragon-body svg { width: 100%; height: 100%; fill: #000000; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
 
-/* RECURRING BLACK DRAGON (Every 15-30s) */
-.black-dragon {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: #000000;
-    z-index: 2; /* Above canvas */
-    transform: translateX(-100%); /* Start off-screen left */
-    pointer-events: none;
-    will-change: transform;
-    transition: transform 0.6s cubic-bezier(0.6, 0, 0.9, 0.6); /* Fast move */
+.dragon-wipe.animate .dragon-body { opacity: 1; animation: dragonFly 2s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+.dragon-wipe.animate .dragon-trail { animation: dragonTrailExpand 2s cubic-bezier(0.7, 0, 0.3, 1) forwards; }
+.dragon-wipe.fade-out { opacity: 1; animation: dragonFadeOut 1s ease-in forwards; }
+
+@keyframes dragonFly {
+    0% { transform: translateX(100vw) rotate(10deg); }
+    20% { transform: translateX(60vw) rotate(0deg); }
+    50% { transform: translateX(0vw) rotate(-5deg); }
+    100% { transform: translateX(-120vw) rotate(-10deg); }
 }
-.black-dragon.wipe {
-    transform: translateX(100%); /* Move to right */
+@keyframes dragonTrailExpand {
+    0% { transform: scaleX(0); }
+    10% { transform: scaleX(0.1); }
+    100% { transform: scaleX(3); }
 }
+@keyframes dragonFadeOut { to { opacity: 0; } }
 
 /* Main App */
 #main-app { position: relative; z-index: 10; opacity: 0; transition: opacity 0.8s ease; min-height: 100vh; overflow-y: auto; }
@@ -111,9 +116,9 @@ body, html {
 #brain-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 20000; display: none; overflow-y: auto; background: linear-gradient(135deg, #e0f7fa 0%, #e8f5e9 50%, #fff8e1 100%); font-family: 'Tajawal', sans-serif; color: #2c3e50; }
 #brain-container.visible { display: flex; }
 .back-btn-heaven { position: fixed; top: 20px; left: 20px; z-index: 20001; background: rgba(255,255,255,0.8); border: none; backdrop-filter: blur(5px); padding: 10px 20px; border-radius: 20px; color: #2e7d32; font-weight: bold; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-.back-btn-heaven:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+.back-btn-heaven:hover { background: #fff; transform: translateY(-2px); }
 .heaven-layout { display: flex; width: 100%; min-height: 100vh; padding-top: 80px; }
-.heaven-sidebar { width: 280px; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(15px); border-right: 1px solid rgba(255,255,255,0.6); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 12px; height: 100vh; position: sticky; top: 0; box-shadow: 5px 0 20px rgba(0,0,0,0.02); }
+.heaven-sidebar { width: 280px; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(15px); border-right: 1px solid rgba(255,255,255,0.6); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 12px; height: 100vh; position: sticky; top: 0; }
 .heaven-logo { font-size: 1.8rem; text-align: center; color: #1b5e20; margin-bottom: 2rem; font-weight: bold; font-family: 'Cormorant Garamond', serif; }
 .heaven-cat-btn { background: rgba(255,255,255,0.6); border: none; padding: 14px 20px; border-radius: 16px; text-align: right; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #37474f; transition: all 0.3s; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
 .heaven-cat-btn:hover { background: rgba(255,255,255,0.9); transform: translateX(-5px); }
@@ -130,7 +135,7 @@ body, html {
 .heaven-autocomplete-item q { display: block; font-weight: 600; color: #2e7d32; quotes: none; }
 .heaven-autocomplete-item span { display: block; font-size: 0.85rem; color: #78909c; margin-top: 5px; }
 .heaven-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; width: 100%; }
-.heaven-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(5px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255,255,255,0.8); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; direction: rtl; position: relative; overflow: hidden; }
+.heaven-card { background: rgba(255,255,255,0.7); backdrop-filter: blur(5px); border-radius: 20px; padding: 2rem; border: 1px solid rgba(255,255,255,0.8); transition: all 0.4s; cursor: pointer; direction: rtl; }
 .heaven-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(46, 125, 50, 0.15); background: #fff; border-color: #c8e6c9; }
 .heaven-card-q { font-size: 1.2rem; font-weight: 700; color: #1b5e20; margin-bottom: 1rem; }
 .heaven-card-a { font-size: 0.95rem; color: #546e7a; line-height: 1.7; margin-bottom: 1.5rem; }
@@ -139,14 +144,15 @@ body, html {
 .heaven-modal-overlay.show { display: flex; }
 .heaven-modal-box { background: #fff; border-radius: 30px; width: 100%; max-width: 650px; padding: 3rem; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.15); animation: slideUp 0.5s ease; border: 1px solid #e0e0e0; }
 .heaven-modal-close { position: absolute; top: 20px; left: 20px; background: #f5f5f5; border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; line-height: 1; color: #757575; }
-.heaven-modal-q { font-size: 1.7rem; color: #2e7d32; margin-bottom: 1.5rem; text-align: center; line-height: 1.4; }
+.heaven-modal-q { font-size: 1.7rem; color: #2e7d32; margin-bottom: 1.5rem; text-align: center; }
 .heaven-modal-a { font-size: 1.1rem; line-height: 2; color: #37474f; text-align: justify; }
 
 @media (max-width: 768px) {
     .heaven-layout { flex-direction: column; }
-    .heaven-sidebar { width: 100%; height: auto; position: relative; flex-direction: row; overflow-x: auto; padding: 1rem; }
-    .heaven-cat-btn { min-width: 110px; justify-content: center; padding: 12px; }
+    .heaven-sidebar { width: 100%; height: auto; flex-direction: row; overflow-x: auto; padding: 1rem; }
+    .heaven-cat-btn { min-width: 110px; justify-content: center; }
     .heaven-logo { display: none; }
     .heaven-results-grid { grid-template-columns: 1fr; }
     .heaven-main { padding: 1.5rem; }
+    .dragon-body { width: 200px; height: 200px; }
 }
