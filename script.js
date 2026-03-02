@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         particleCount: 800,
         noiseScale: 0.005,
         mouseRadius: 150,
-        fadeSpeed: 0.05,
+        fadeSpeed: 0.15, // FIX: Increased from 0.05 to 0.15 to clear grey trails faster
         cleanupTime: 4000, // 4 seconds
         loadingDuration: 2000, 
         palette: [
@@ -174,28 +174,14 @@ document.addEventListener('DOMContentLoaded', function() {
     window.donateAlert = function() { const address = "bc1qs642vuwxtwn5z926uuhnc6t33u42csdhes09c4"; navigator.clipboard.writeText(address).then(() => alert("BTC Address copied!"), () => alert("BTC: " + address)); };
 
     // ==================== LIGHT PAGE & BRAIN HEAVEN LOGIC ====================
-    window.openBrain = function() {
-        brainContainer.classList.add('visible');
-        initHeaven(); // Initialize the new logic
-    };
-
-    window.closeBrain = function() {
-        brainContainer.classList.remove('visible');
-    };
+    window.openBrain = function() { brainContainer.classList.add('visible'); initHeaven(); };
+    window.closeBrain = function() { brainContainer.classList.remove('visible'); };
     
     // Heaven Logic
     let activeCategory = "all";
-
     function initHeaven() {
-        // Check if data exists
-        if (typeof brainData === 'undefined' || typeof brainCategories === 'undefined') {
-            console.error("data2.js is missing or empty");
-            return;
-        }
-        
-        // Render Categories
+        if (typeof brainData === 'undefined' || typeof brainCategories === 'undefined') return;
         renderCategories();
-        // Render All Cards initially
         filterHeavenData();
     }
 
@@ -204,27 +190,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if(!nav) return;
         nav.innerHTML = `
             <button class="heaven-cat-btn active" onclick="setCategory('all')">✨ الكل</button>
-            ${brainCategories.map(c => `
-                <button class="heaven-cat-btn" onclick="setCategory('${c.id}')">${c.icon} ${c.name}</button>
-            `).join('')}
+            ${brainCategories.map(c => `<button class="heaven-cat-btn" onclick="setCategory('${c.id}')">${c.icon} ${c.name}</button>`).join('')}
         `;
     }
 
     window.setCategory = function(id) {
         activeCategory = id;
-        // Update active button
         document.querySelectorAll('.heaven-cat-btn').forEach(btn => btn.classList.remove('active'));
         const btns = document.querySelectorAll('.heaven-cat-btn');
         btns.forEach(b => { if(b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active'); });
-        
         filterHeavenData();
     }
 
     window.filterHeavenData = function() {
         let data = brainData;
-        if (activeCategory !== 'all') {
-            data = brainData.filter(d => d.category === activeCategory);
-        }
+        if (activeCategory !== 'all') data = brainData.filter(d => d.category === activeCategory);
         renderHeavenCards(data);
     }
 
@@ -240,96 +220,51 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
     }
 
-    // Advanced Search
     window.handleHeavenSearch = function() {
         const q = document.getElementById('heaven-search').value.trim();
         const dropdown = document.getElementById('heaven-autocomplete');
-        
-        if (q.length < 1) {
-            dropdown.classList.remove('show');
-            filterHeavenData(); // Reset to category view
-            return;
-        }
-
-        const results = brainData.filter(d => 
-            d.question.includes(q) || d.answer.includes(q)
-        );
-
+        if (q.length < 1) { dropdown.classList.remove('show'); filterHeavenData(); return; }
+        const results = brainData.filter(d => d.question.includes(q) || d.answer.includes(q));
         if (results.length > 0) {
-            dropdown.innerHTML = results.slice(0, 5).map(item => `
-                <div class="heaven-autocomplete-item" onclick="selectHeavenSuggestion(${item.id})">
-                    <q>${item.question}</q>
-                    <span>${item.reference}</span>
-                </div>
-            `).join('');
+            dropdown.innerHTML = results.slice(0, 5).map(item => `<div class="heaven-autocomplete-item" onclick="selectHeavenSuggestion(${item.id})"><q>${item.question}</q><span>${item.reference}</span></div>`).join('');
             dropdown.classList.add('show');
-        } else {
-            dropdown.innerHTML = `<div class="heaven-autocomplete-item"><q>لا توجد نتائج</q></div>`;
-            dropdown.classList.add('show');
-        }
-
-        // Render main results immediately as well
+        } else { dropdown.innerHTML = `<div class="heaven-autocomplete-item"><q>لا توجد نتائج</q></div>`; dropdown.classList.add('show'); }
         renderHeavenCards(results);
     }
 
-    window.selectHeavenSuggestion = function(id) {
-        document.getElementById('heaven-autocomplete').classList.remove('show');
-        openHeavenModal(id);
-    }
+    window.selectHeavenSuggestion = function(id) { document.getElementById('heaven-autocomplete').classList.remove('show'); openHeavenModal(id); };
 
     window.openHeavenModal = function(id) {
-        const item = brainData.find(d => d.id === id);
-        if(!item) return;
-        
-        const modal = document.getElementById('heaven-modal');
-        const body = document.getElementById('heaven-modal-body');
+        const item = brainData.find(d => d.id === id); if(!item) return;
+        const modal = document.getElementById('heaven-modal'); const body = document.getElementById('heaven-modal-body');
         if(!modal || !body) return;
-        
-        body.innerHTML = `
-            <button class="heaven-modal-close" onclick="closeHeavenModal()">×</button>
-            <div class="heaven-modal-q">${item.question}</div>
-            <div class="heaven-modal-a">${item.answer}<br><br><em style="color:#81c784;">📖 ${item.reference}</em></div>
-        `;
+        body.innerHTML = `<button class="heaven-modal-close" onclick="closeHeavenModal()">×</button><div class="heaven-modal-q">${item.question}</div><div class="heaven-modal-a">${item.answer}<br><br><em style="color:#81c784;">📖 ${item.reference}</em></div>`;
         modal.classList.add('show');
     }
 
-    window.closeHeavenModal = function() {
-        const modal = document.getElementById('heaven-modal');
-        if(modal) modal.classList.remove('show');
-    }
+    window.closeHeavenModal = function() { const modal = document.getElementById('heaven-modal'); if(modal) modal.classList.remove('show'); };
 
     // ==================== SECRET ADMIN ACCESS (5 Clicks) ====================
-    let clickCount = 0;
-    let clickTimer = null;
-    const logo = document.querySelector('.logo'); // The "REVOLUTION" text
-
+    let clickCount = 0; let clickTimer = null;
+    const logo = document.querySelector('.logo');
     if (logo) {
         logo.style.cursor = 'pointer';
         logo.addEventListener('click', () => {
             clickCount++;
             if (clickTimer) clearTimeout(clickTimer);
-            
-            if (clickCount >= 5) {
-                window.location.href = 'index2.html';
-                clickCount = 0;
-            }
-
-            // Reset count if user stops clicking for 1 second
-            clickTimer = setTimeout(() => {
-                clickCount = 0;
-            }, 1000);
+            if (clickCount >= 5) { window.location.href = 'index2.html'; clickCount = 0; }
+            clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
         });
     }
 
     // ==================== ANIMATION LOOP ====================
-    function resize() {
-        width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight;
-        particles = [];
-        for (let i = 0; i < CONFIG.particleCount; i++) particles.push(new Particle());
-    }
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; particles = []; for (let i = 0; i < CONFIG.particleCount; i++) particles.push(new Particle()); }
 
     function animate() {
-        if (time > CONFIG.cleanupTime) ctx.fillStyle = 'rgba(5, 5, 5, 0.2)'; else ctx.fillStyle = `rgba(5,5,5,${CONFIG.fadeSpeed})`;
+        // Using higher alpha (0.15) to clear trails and prevent grey buildup
+        if (time > CONFIG.cleanupTime) ctx.fillStyle = 'rgba(5, 5, 5, 0.15)'; 
+        else ctx.fillStyle = `rgba(5,5,5,${CONFIG.fadeSpeed})`;
+        
         ctx.fillRect(0, 0, width, height);
         if (time < CONFIG.cleanupTime + 200) {
             ctx.globalCompositeOperation = 'lighter';
