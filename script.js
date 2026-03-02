@@ -10,15 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainApp = document.getElementById('main-app');
     const dragonWipe = document.getElementById('dragon-wipe');
     const brainContainer = document.getElementById('brain-container');
+    const blackDragon = document.getElementById('black-dragon'); // Recurring Dragon
 
     // ==================== CONFIGURATION ====================
     const CONFIG = {
         particleCount: 800,
         noiseScale: 0.005,
         mouseRadius: 150,
-        trailAlpha: 0.05,     // Low alpha for trails during animation
-        solidClearAlpha: 1.0, // Solid black to clear grey residue
-        animationDuration: 5000, // 5 seconds of animation
+        fadeSpeed: 0.015, // FIX: 0.015 makes trails last ~5 seconds
+        cleanupTime: 4000,
         loadingDuration: 2000, 
         palette: [
             { r: 0, g: 122, b: 61 },    // Green
@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         draw() {
             const { r, g, b } = this.color;
             ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(${r},${g},${b},0.6)`; ctx.fill();
+            ctx.fillStyle = `rgba(${r},${g},${b},0.5)`; ctx.fill();
         }
     }
 
@@ -258,33 +258,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ==================== ANIMATION LOOP (FIXED) ====================
+    // ==================== RECURRING BLACK DRAGON (Every 15-30s) ====================
+    function scheduleDragon() {
+        const delay = 15000 + Math.random() * 15000; // 15s to 30s
+        setTimeout(() => {
+            // Trigger the wipe animation
+            blackDragon.classList.add('wipe');
+            
+            // Reset position after animation ends (0.6s in CSS)
+            setTimeout(() => {
+                // Instantly move it back to start without transition
+                blackDragon.style.transition = 'none';
+                blackDragon.classList.remove('wipe'); // Remove wipe class
+                // Force reflow
+                void blackDragon.offsetWidth; 
+                // Restore transition for next time
+                blackDragon.style.transition = 'transform 0.6s cubic-bezier(0.6, 0, 0.9, 0.6)';
+            }, 600); // Match CSS transition duration
+
+            // Loop
+            scheduleDragon();
+        }, delay);
+    }
+
+    // ==================== ANIMATION LOOP ====================
     function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; particles = []; for (let i = 0; i < CONFIG.particleCount; i++) particles.push(new Particle()); }
 
     function animate() {
-        // Logic:
-        // 1. First 5 seconds: Draw trails.
-        // 2. After 5 seconds: Clear to solid black to remove grey trails, stop drawing particles.
+        // Using 0.015 alpha means trails fade over ~5 seconds
+        if (time > CONFIG.cleanupTime) ctx.fillStyle = 'rgba(5, 5, 5, 0.015)'; 
+        else ctx.fillStyle = `rgba(5,5,5,${CONFIG.fadeSpeed})`;
         
-        if (time < CONFIG.animationDuration) {
-            // Phase 1: Trail Effect
-            ctx.fillStyle = `rgba(5,5,5,${CONFIG.trailAlpha})`; 
-            ctx.fillRect(0, 0, width, height);
-            
+        ctx.fillRect(0, 0, width, height);
+        if (time < CONFIG.cleanupTime + 200) {
             ctx.globalCompositeOperation = 'lighter';
             for (let i = 0; i < particles.length; i++) { particles[i].update(); particles[i].draw(); }
             ctx.globalCompositeOperation = 'source-over';
-        } else {
-            // Phase 2: Clean Up
-            // We check if we are already solid black to save performance, 
-            // but we redraw black for a few frames to ensure the grey is gone.
-            if (time < CONFIG.animationDuration + 100) { 
-                ctx.fillStyle = `rgba(5,5,5,${CONFIG.solidClearAlpha})`; 
-                ctx.fillRect(0, 0, width, height);
-            }
-            // Stop updating/drawing particles after animation duration
         }
-
         time++; requestAnimationFrame(animate);
     }
 
@@ -306,5 +316,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
     
     startSequence();
+    scheduleDragon(); // Start the recurring dragon loop
 
 });
