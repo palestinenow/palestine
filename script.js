@@ -8,29 +8,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const ctx = canvas.getContext('2d');
     const loadingOverlay = document.getElementById('loadingOverlay');
     const mainApp = document.getElementById('main-app');
-    const dragonWipe = document.getElementById('dragon-wipe');
+    const dragonWipe = document.getElementById('dragonWipe');
     const brainContainer = document.getElementById('brain-container');
-    const blackDragon = document.getElementById('black-dragon');
 
     // ==================== CONFIGURATION ====================
     const CONFIG = {
-        particleCount: 800,
+        particleCount: 1000,
         noiseScale: 0.005,
         mouseRadius: 150,
-        fadeSpeed: 0.015, // Correct speed for 5-second trail
-        loadingDuration: 2000, 
-        palette: [
-            { r: 0, g: 122, b: 61 },    // Green
-            { r: 255, g: 255, b: 255 }, // White
-            { r: 30, g: 30, b: 35 },    // Near-black
-            { r: 206, g: 17, b: 38 }    // Red
-        ]
+        initialFadeSpeed: 0.05,   // Trails visible at start
+        cleanFadeSpeed: 0.5,      // Trails vanish instantly after cleanup
+        loadingDuration: 2000,
+        trailRemovalDelay: 3000   // Clean trails after 3s
     };
+
+    const palette = [
+        { r: 0, g: 122, b: 61 },    // Green
+        { r: 255, g: 255, b: 255 }, // White
+        { r: 30, g: 30, b: 35 },    // Near-black
+        { r: 206, g: 17, b: 38 }    // Red
+    ];
 
     // ==================== STATE ====================
     let width = 0, height = 0;
     let particles = [];
     let time = 0;
+    let fadeSpeed = CONFIG.initialFadeSpeed; 
+    
     const mouse = { x: null, y: null, radius: CONFIG.mouseRadius };
 
     // ==================== SIMPLEX NOISE ====================
@@ -51,19 +55,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ==================== PARTICLE CLASS ====================
     class Particle {
-        constructor() { this.reset(); }
-        reset() {
+        constructor() { this.reset(true); }
+        reset(init = false) {
             this.x = Math.random() * width; this.y = Math.random() * height;
             this.vx = 0; this.vy = 0;
             this.speed = Math.random() * 1.5 + 0.5;
             this.size = Math.max(0.5, Math.random() * 1.5 + 0.5);
-            this.color = CONFIG.palette[Math.floor(Math.random() * CONFIG.palette.length)];
+            if (!init || !this.color) this.color = palette[Math.floor(Math.random() * palette.length)];
         }
         update() {
             const angle = noise.noise(this.x * CONFIG.noiseScale, this.y * CONFIG.noiseScale, time * 0.0003) * Math.PI * 4;
             let fx = Math.cos(angle) * this.speed;
             let fy = Math.sin(angle) * this.speed;
-
             if (mouse.x !== null && mouse.y !== null) {
                 const dx = mouse.x - this.x; const dy = mouse.y - this.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
@@ -81,8 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
         draw() {
             const { r, g, b } = this.color;
             ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            // Reduced opacity to 0.15 to prevent white/grey fog buildup
-            ctx.fillStyle = `rgba(${r},${g},${b},0.15)`; 
+            ctx.fillStyle = `rgba(${r},${g},${b},0.5)`;
             ctx.fill();
         }
     }
@@ -133,36 +135,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function parseTextToHTML(text) {
         const lines = text.split('\n');
-        let isTable = false;
-        if (lines.length > 2 && lines.filter(l => l.includes('\t')).length > 2) isTable = true;
-        if (isTable) {
+        if (lines.length > 2 && lines.filter(l => l.includes('\t')).length > 2) {
             const rows = lines.filter(l => l.trim() !== '');
             let html = '<table class="data-table">';
             rows.forEach((row, index) => {
                 const cells = row.split('\t');
                 const tag = index === 0 ? 'th' : 'td';
-                if(index === 0) html += '<thead>';
-                if(index === 1) html += '<tbody>';
+                if(index === 0) html += '<thead>'; if(index === 1) html += '<tbody>';
                 html += '<tr>'; cells.forEach(cell => { html += `<${tag}>${cell.trim()}</${tag}>`; }); html += '</tr>';
-                if(index === 0) html += '</thead>';
-                if(index === rows.length - 1) html += '</tbody>';
+                if(index === 0) html += '</thead>'; if(index === rows.length - 1) html += '</tbody>';
             });
-            html += '</table>'; return html;
+            return html + '</table>';
         } else return text.replace(/\n/g, '<br>');
     }
 
     window.openModal = function(id) {
         const item = countriesData.find(c => c.id === id); if (!item) return;
         const modal = document.getElementById('detail-modal'); const body = document.getElementById('modal-body');
-        let content = parseTextToHTML(item.events || '');
         body.innerHTML = `
             <button class="modal-close" onclick="closeModal()">×</button>
             <div style="margin-bottom: 2rem;"><div style="font-size: 2rem; margin-bottom: 0.5rem;">${item.name}</div><div style="font-size: 0.9rem; color: var(--muted);">${item.subtitle || ''}</div></div>
-            <div class="data-body-text">${content}</div>
+            <div class="data-body-text">${parseTextToHTML(item.events || '')}</div>
         `;
         modal.classList.add('active'); document.body.style.overflow = 'hidden';
     };
-
     window.closeModal = function() { document.getElementById('detail-modal').classList.remove('active'); document.body.style.overflow = ''; };
     document.getElementById('detail-modal').addEventListener('click', (e) => { if (e.target.id === 'detail-modal') closeModal(); });
     window.donateAlert = function() { const address = "bc1qs642vuwxtwn5z926uuhnc6t33u42csdhes09c4"; navigator.clipboard.writeText(address).then(() => alert("BTC Address copied!"), () => alert("BTC: " + address)); };
@@ -172,73 +168,41 @@ document.addEventListener('DOMContentLoaded', function() {
     window.closeBrain = function() { brainContainer.classList.remove('visible'); };
     
     let activeCategory = "all";
-    function initHeaven() {
-        if (typeof brainData === 'undefined' || typeof brainCategories === 'undefined') return;
-        renderCategories();
-        filterHeavenData();
-    }
-
+    function initHeaven() { if (typeof brainData === 'undefined') return; renderCategories(); filterHeavenData(); }
     function renderCategories() {
-        const nav = document.getElementById('heaven-nav');
-        if(!nav) return;
-        nav.innerHTML = `
-            <button class="heaven-cat-btn active" onclick="setCategory('all')">✨ الكل</button>
-            ${brainCategories.map(c => `<button class="heaven-cat-btn" onclick="setCategory('${c.id}')">${c.icon} ${c.name}</button>`).join('')}
-        `;
+        const nav = document.getElementById('heaven-nav'); if(!nav) return;
+        nav.innerHTML = `<button class="heaven-cat-btn active" onclick="setCategory('all')">✨ الكل</button>${brainCategories.map(c => `<button class="heaven-cat-btn" onclick="setCategory('${c.id}')">${c.icon} ${c.name}</button>`).join('')}`;
     }
-
     window.setCategory = function(id) {
         activeCategory = id;
         document.querySelectorAll('.heaven-cat-btn').forEach(btn => btn.classList.remove('active'));
-        const btns = document.querySelectorAll('.heaven-cat-btn');
-        btns.forEach(b => { if(b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active'); });
+        document.querySelectorAll('.heaven-cat-btn').forEach(b => { if(b.getAttribute('onclick').includes(`'${id}'`)) b.classList.add('active'); });
         filterHeavenData();
     }
-
-    window.filterHeavenData = function() {
-        let data = brainData;
-        if (activeCategory !== 'all') data = brainData.filter(d => d.category === activeCategory);
-        renderHeavenCards(data);
-    }
-
+    window.filterHeavenData = function() { renderHeavenCards(activeCategory === 'all' ? brainData : brainData.filter(d => d.category === activeCategory)); };
     function renderHeavenCards(data) {
-        const grid = document.getElementById('heaven-results');
-        if(!grid) return;
-        grid.innerHTML = data.map(item => `
-            <div class="heaven-card" onclick="openHeavenModal(${item.id})">
-                <div class="heaven-card-q">${item.question}</div>
-                <div class="heaven-card-a">${item.answer.substring(0, 100)}...</div>
-                <div class="heaven-card-ref">📖 ${item.reference}</div>
-            </div>
-        `).join('');
+        const grid = document.getElementById('heaven-results'); if(!grid) return;
+        grid.innerHTML = data.map(item => `<div class="heaven-card" onclick="openHeavenModal(${item.id})"><div class="heaven-card-q">${item.question}</div><div class="heaven-card-a">${item.answer.substring(0, 100)}...</div><div class="heaven-card-ref">📖 ${item.reference}</div></div>`).join('');
     }
-
     window.handleHeavenSearch = function() {
-        const q = document.getElementById('heaven-search').value.trim();
-        const dropdown = document.getElementById('heaven-autocomplete');
+        const q = document.getElementById('heaven-search').value.trim(); const dropdown = document.getElementById('heaven-autocomplete');
         if (q.length < 1) { dropdown.classList.remove('show'); filterHeavenData(); return; }
         const results = brainData.filter(d => d.question.includes(q) || d.answer.includes(q));
-        if (results.length > 0) {
-            dropdown.innerHTML = results.slice(0, 5).map(item => `<div class="heaven-autocomplete-item" onclick="selectHeavenSuggestion(${item.id})"><q>${item.question}</q><span>${item.reference}</span></div>`).join('');
-            dropdown.classList.add('show');
-        } else { dropdown.innerHTML = `<div class="heaven-autocomplete-item"><q>لا توجد نتائج</q></div>`; dropdown.classList.add('show'); }
+        if (results.length > 0) { dropdown.innerHTML = results.slice(0, 5).map(item => `<div class="heaven-autocomplete-item" onclick="selectHeavenSuggestion(${item.id})"><q>${item.question}</q><span>${item.reference}</span></div>`).join(''); dropdown.classList.add('show'); }
+        else { dropdown.innerHTML = `<div class="heaven-autocomplete-item"><q>لا توجد نتائج</q></div>`; dropdown.classList.add('show'); }
         renderHeavenCards(results);
     }
-
     window.selectHeavenSuggestion = function(id) { document.getElementById('heaven-autocomplete').classList.remove('show'); openHeavenModal(id); };
-
     window.openHeavenModal = function(id) {
         const item = brainData.find(d => d.id === id); if(!item) return;
-        const modal = document.getElementById('heaven-modal'); const body = document.getElementById('heaven-modal-body');
-        if(!modal || !body) return;
+        const body = document.getElementById('heaven-modal-body');
         body.innerHTML = `<button class="heaven-modal-close" onclick="closeHeavenModal()">×</button><div class="heaven-modal-q">${item.question}</div><div class="heaven-modal-a">${item.answer}<br><br><em style="color:#81c784;">📖 ${item.reference}</em></div>`;
-        modal.classList.add('show');
-    }
-
-    window.closeHeavenModal = function() { const modal = document.getElementById('heaven-modal'); if(modal) modal.classList.remove('show'); };
+        document.getElementById('heaven-modal').classList.add('show');
+    };
+    window.closeHeavenModal = function() { document.getElementById('heaven-modal').classList.remove('show'); };
 
     // ==================== SECRET ADMIN ACCESS ====================
-    let clickCount = 0; let clickTimer = null;
+    let clickCount = 0, clickTimer = null;
     const logo = document.querySelector('.logo');
     if (logo) {
         logo.style.cursor = 'pointer';
@@ -250,56 +214,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ==================== RECURRING BLACK DRAGON ====================
-    function scheduleDragon() {
-        const delay = 15000 + Math.random() * 15000; // 15s to 30s
-        setTimeout(() => {
-            blackDragon.classList.add('wipe');
-            setTimeout(() => {
-                blackDragon.style.transition = 'none';
-                blackDragon.classList.remove('wipe');
-                void blackDragon.offsetWidth; 
-                blackDragon.style.transition = 'transform 0.6s cubic-bezier(0.6, 0, 0.9, 0.6)';
-            }, 600);
-            scheduleDragon();
-        }, delay);
-    }
-
     // ==================== ANIMATION LOOP ====================
-    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; particles = []; for (let i = 0; i < CONFIG.particleCount; i++) particles.push(new Particle()); }
-
+    function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; particles = []; for (let i = 0; i < CONFIG.particleCount; i++) particles.push(new Particle()); }
     function animate() {
-        // Using 0.015 alpha consistently. 
-        // Because particle opacity is now 0.15, this fade speed is perfect to clear trails in ~5s
-        // without leaving grey residue.
-        ctx.fillStyle = 'rgba(5, 5, 5, 0.015)';
+        ctx.fillStyle = `rgba(5,5,5,${fadeSpeed})`;
         ctx.fillRect(0, 0, width, height);
-
         ctx.globalCompositeOperation = 'lighter';
         for (let i = 0; i < particles.length; i++) { particles[i].update(); particles[i].draw(); }
         ctx.globalCompositeOperation = 'source-over';
-
         time++; requestAnimationFrame(animate);
     }
 
-    // ==================== LOADING SEQUENCE ====================
+    // ==================== LOADING & TRANSITION SEQUENCE ====================
     function startSequence() {
-        resize(); animate();
         setTimeout(() => {
             loadingOverlay.classList.add('hidden');
+            
+            // Trigger Dragon Wipe
+            dragonWipe.classList.add('animate');
+
+            // Show content mid-animation
             setTimeout(() => {
-                dragonWipe.classList.add('active');
-                setTimeout(() => { mainApp.classList.add('visible'); initAppLogic(); }, 500);
-                setTimeout(() => { dragonWipe.style.transition = "opacity 2.5s ease-out"; dragonWipe.classList.remove('active'); }, 1000);
-            }, 500);
+                mainApp.classList.add('visible');
+                initAppLogic();
+            }, 1000);
+
+            // Fade out dragon layer
+            setTimeout(() => {
+                dragonWipe.classList.add('fade-out');
+            }, 2000);
+
+            // 5. Remove Grey History Trail after 3 seconds (From provided code logic)
+            setTimeout(() => {
+                ctx.clearRect(0, 0, width, height); // Instant clean
+                fadeSpeed = CONFIG.cleanFadeSpeed;   // Prevent new long trails
+            }, CONFIG.trailRemovalDelay);
+
         }, CONFIG.loadingDuration);
     }
 
-    window.addEventListener('resize', resize);
-    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-    window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
-    
-    startSequence();
-    scheduleDragon();
+    // ==================== SETUP ====================
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+        animate();
+        startSequence();
+    }
 
-});
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+
+})();
