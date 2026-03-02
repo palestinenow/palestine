@@ -4,135 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | Revolution</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* --- CSS STYLES --- */
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --fg: #f1f5f9;
-            --border: #334155;
-            --accent: #10b981;
-            --danger: #ef4444;
+            --bg: #050505;
+            --card: #111;
+            --border: #333;
+            --accent: #007a3d;
+            --text: #e0e0e0;
+            --muted: #888;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: var(--bg);
-            color: var(--fg);
             font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; display: none; /* Hidden until login */
         }
+        body.logged-in { display: flex; }
 
         /* Login Screen */
         #login-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
+            position: fixed; inset: 0;
+            background: #000;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
         }
-        .login-box {
-            background: var(--card);
-            padding: 3rem;
-            border-radius: 16px;
+        #login-box {
+            background: var(--card); padding: 3rem;
             border: 1px solid var(--border);
-            text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-radius: 10px; text-align: center;
+            width: 100%; max-width: 400px;
         }
-        .login-box h1 { margin-bottom: 1.5rem; color: var(--accent); font-size: 1.5rem; }
-        .login-box input {
+        #login-box h2 { margin-bottom: 1.5rem; color: var(--accent); }
+        input[type="password"], input[type="text"], select, textarea {
             width: 100%; padding: 12px;
-            background: var(--bg); border: 1px solid var(--border);
-            color: var(--fg); border-radius: 8px; margin-bottom: 1rem;
-            font-size: 1rem;
+            background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 5px;
+            font-size: 1rem; outline: none;
+            font-family: 'Inter', sans-serif;
         }
-        .login-box button {
-            width: 100%; padding: 12px;
-            background: var(--accent); border: none;
-            color: #000; font-weight: bold; border-radius: 8px;
-            cursor: pointer; transition: opacity 0.3s;
+        textarea { resize: vertical; min-height: 100px; }
+        select { cursor: pointer; }
+        button {
+            padding: 10px 20px; background: var(--accent);
+            color: #fff; border: none; border-radius: 5px;
+            cursor: pointer; font-weight: 600; transition: opacity 0.3s;
+            margin-top: 1rem; width: 100%;
+            font-family: 'Inter', sans-serif;
         }
-        .login-box button:hover { opacity: 0.9; }
+        button:hover { opacity: 0.9; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .error-msg { color: #ff4444; margin-top: 1rem; font-size: 0.9rem; display: none; }
 
-        /* Admin Dashboard */
-        #admin-dashboard { display: none; flex-direction: column; height: 100vh; }
+        /* Admin Layout */
+        .admin-container { display: flex; width: 100%; min-height: 100vh; }
         
-        header {
-            padding: 1rem 2rem;
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        header h1 { font-size: 1.2rem; color: var(--accent); }
-        header button {
-            background: transparent; border: 1px solid var(--border);
-            color: var(--fg); padding: 8px 16px; border-radius: 6px; cursor: pointer;
-        }
-
-        .main-content {
-            flex: 1; display: flex; overflow: hidden;
-        }
-
         /* Sidebar */
         .sidebar {
-            width: 250px; background: var(--card);
+            width: 250px; background: #111;
             border-right: 1px solid var(--border);
-            padding: 1rem; display: flex; flex-direction: column; gap: 5px;
+            padding: 2rem 1rem;
+            display: flex; flex-direction: column; gap: 1rem;
+            flex-shrink: 0;
         }
-        .nav-item {
-            padding: 12px 16px; border-radius: 8px; cursor: pointer;
-            transition: background 0.2s; font-size: 0.9rem;
-            border: none; background: transparent; text-align: left; color: var(--fg);
+        .sidebar h3 { color: var(--accent); font-size: 1.2rem; margin-bottom: 1rem; padding: 0 0.5rem; }
+        .sidebar-btn {
+            background: transparent; color: var(--muted);
+            text-align: left; padding: 12px; border-radius: 5px;
+            width: 100%; margin: 0; border: none;
         }
-        .nav-item:hover { background: rgba(255,255,255,0.05); }
-        .nav-item.active { background: var(--accent); color: #000; font-weight: bold; }
+        .sidebar-btn:hover, .sidebar-btn.active { background: #222; color: #fff; }
+        .sidebar-footer { margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border); }
 
-        /* Content Area */
-        .content-area {
-            flex: 1; padding: 2rem; overflow-y: auto;
-            display: flex; flex-direction: column; gap: 1.5rem;
-        }
-
-        /* Cards & Forms */
-        .admin-card {
-            background: var(--card); border-radius: 12px;
-            border: 1px solid var(--border); padding: 1.5rem;
-        }
-        .admin-card h2 { margin-bottom: 1rem; font-size: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+        /* Main Content */
+        .main-content { flex: 1; padding: 2rem; overflow-y: auto; background: #080808; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .header h1 { font-size: 1.5rem; }
+        .btn-group { display: flex; gap: 0.5rem; }
+        .btn-secondary { background: #333; width: auto; padding: 10px 20px; }
+        .btn-primary { background: var(--accent); width: auto; }
         
-        .form-group { margin-bottom: 1rem; }
-        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 10px;
-            background: var(--bg); border: 1px solid var(--border);
-            color: var(--fg); border-radius: 6px; font-family: inherit;
+        /* Table */
+        .table-container { overflow-x: auto; background: var(--card); border-radius: 8px; border: 1px solid var(--border); }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #1a1a1a; color: var(--muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+        tr:hover { background: rgba(255,255,255,0.03); }
+        .action-btn { 
+            background: transparent; color: var(--accent); width: auto;
+            padding: 5px 10px; font-size: 0.8rem; border: 1px solid var(--accent);
+            border-radius: 4px; margin: 0;
         }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .action-btn.delete { border-color: #ff4444; color: #ff4444; margin-left: 5px; }
+        .action-btn:hover { background: rgba(0, 122, 61, 0.1); }
+        .action-btn.delete:hover { background: rgba(255, 68, 68, 0.1); }
+
+        /* Modal Editor */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center; z-index: 500;
+            padding: 1rem;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-content {
+            background: #0a0a0a; padding: 2rem;
+            border-radius: 10px; width: 100%; max-width: 600px;
+            max-height: 90vh; overflow-y: auto;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+        .modal-header h2 { font-size: 1.2rem; color: #fff; }
+        .close-btn { background: transparent; color: #fff; width: 30px; height: 30px; padding: 0; border: 1px solid #444; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: #aaa; font-size: 0.9rem; font-weight: 600; }
         
-        .btn-primary {
-            background: var(--accent); color: #000;
-            border: none; padding: 10px 20px; border-radius: 6px;
-            font-weight: bold; cursor: pointer; transition: transform 0.1s;
-        }
-        .btn-primary:active { transform: scale(0.98); }
-        .btn-danger { background: var(--danger); color: #fff; }
-
-        /* Table List */
-        .data-list { margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; }
-        .data-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px; border-radius: 6px; margin-bottom: 5px;
-            background: rgba(255,255,255,0.02);
-        }
-        .data-item span { font-size: 0.9rem; }
-        .data-item-actions { display: flex; gap: 5px; }
-        .btn-xs { padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; border: none; cursor: pointer; }
-
         /* Responsive */
         @media (max-width: 768px) {
-            .sidebar { display: none; } /* Simple hide for mobile */
-            .form-row { grid-template-columns: 1fr; }
+            .admin-container { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 1rem; overflow-x: auto; flex-direction: row; }
+            .sidebar h3 { display: none; }
+            .sidebar-btn { white-space: nowrap; }
+            .sidebar-footer { border-top: none; padding-top: 0; margin-top: 0; }
         }
     </style>
 </head>
@@ -140,474 +138,320 @@
 
     <!-- Login Screen -->
     <div id="login-screen">
-        <div class="login-box">
-            <h1>Admin Access</h1>
-            <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1.5rem;">Enter password to manage data</p>
-            <input type="password" id="password-input" placeholder="Password">
-            <button onclick="checkPassword()">Enter</button>
+        <div id="login-box">
+            <h2>🔐 Admin Access</h2>
+            <input type="password" id="password-input" placeholder="Enter Password" autofocus>
+            <button onclick="attemptLogin()">Unlock</button>
+            <div class="error-msg" id="error-msg">Incorrect Password</div>
         </div>
     </div>
 
-    <!-- Dashboard -->
-    <div id="admin-dashboard">
-        <header>
-            <h1>⚙️ Admin Control Panel</h1>
-            <button onclick="logout()">Logout</button>
-        </header>
-
-        <div class="main-content">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <button class="nav-item active" onclick="showSection('main-data')">Main Site Data</button>
-                <button class="nav-item" onclick="showSection('brain-cats')">Brain Categories</button>
-                <button class="nav-item" onclick="showSection('brain-data')">Brain Questions</button>
-                <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border);">
-                    <button class="btn-primary" style="width: 100%;" onclick="downloadAllData()">⬇️ Download Files</button>
-                    <p style="font-size: 0.7rem; color: #64748b; margin-top: 0.5rem; text-align: center;">
-                        Replace <code>data.js</code> & <code>data2.js</code> in your repo.
-                    </p>
-                </div>
-            </aside>
-
-            <!-- Content -->
-            <div class="content-area">
-                
-                <!-- Section 1: Main Site Data -->
-                <section id="sec-main-data" class="section-content">
-                    <div class="admin-card">
-                        <h2>Add / Edit Main Site Data</h2>
-                        <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 1rem;">
-                            This controls the "Countries", "Palestine", "Sovereignty", "External" sections.
-                        </p>
-                        
-                        <div class="form-group">
-                            <label>Select Existing Entry to Edit (Optional)</label>
-                            <select id="main-select" onchange="loadMainData()">
-                                <option value="">-- New Entry --</option>
-                            </select>
-                        </div>
-
-                        <input type="hidden" id="main-edit-id">
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>ID (Unique Number)</label>
-                                <input type="number" id="main-id" placeholder="e.g., 300">
-                            </div>
-                            <div class="form-group">
-                                <label>Level / Section</label>
-                                <select id="main-level">
-                                    <option value="1">Level 1 (Integration)</option>
-                                    <option value="2">Level 2 (Dependency)</option>
-                                    <option value="3">Level 3 (Coordination)</option>
-                                    <option value="4">Level 4 (Immunity)</option>
-                                    <option value="5">Level 5 (Clash)</option>
-                                    <option value="0">Special Section (Palestine/Sov/Ext)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Name / Title</label>
-                            <input type="text" id="main-name" placeholder="e.g., America">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Subtitle</label>
-                            <input type="text" id="main-subtitle" placeholder="e.g., The Tool">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Content (Events/Details)</label>
-                            <textarea id="main-events" rows="6" placeholder="Use \n for new lines. Use \t for table columns."></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Links (JSON Format)</label>
-                            <textarea id="main-links" rows="2" placeholder='[{"name": "Link Name", "url": "https://..."}]'></textarea>
-                        </div>
-
-                        <div style="display: flex; gap: 1rem;">
-                            <button class="btn-primary" onclick="saveMainData()">Save Entry</button>
-                            <button class="btn-primary btn-danger" onclick="deleteMainData()">Delete</button>
-                        </div>
-
-                        <div class="data-list" id="main-list"></div>
-                    </div>
-                </section>
-
-                <!-- Section 2: Brain Categories -->
-                <section id="sec-brain-cats" class="section-content" style="display: none;">
-                    <div class="admin-card">
-                        <h2>Manage Brain Categories</h2>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Category ID (English, no spaces)</label>
-                                <input type="text" id="cat-id" placeholder="e.g., social">
-                            </div>
-                            <div class="form-group">
-                                <label>Icon (Emoji)</label>
-                                <input type="text" id="cat-icon" placeholder="e.g., 🤝">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Category Name (Arabic)</label>
-                            <input type="text" id="cat-name" placeholder="e.g., اجتماعي">
-                        </div>
-                        <button class="btn-primary" onclick="saveCategory()">Add Category</button>
-
-                        <div class="data-list" id="cat-list"></div>
-                    </div>
-                </section>
-
-                <!-- Section 3: Brain Questions -->
-                <section id="sec-brain-data" class="section-content" style="display: none;">
-                    <div class="admin-card">
-                        <h2>Manage Brain Questions</h2>
-                        
-                        <div class="form-group">
-                            <label>Select Question to Edit</label>
-                            <select id="brain-select" onchange="loadBrainData()">
-                                <option value="">-- New Question --</option>
-                            </select>
-                        </div>
-                        <input type="hidden" id="brain-edit-id">
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>ID (Number)</label>
-                                <input type="number" id="brain-id" placeholder="e.g., 101">
-                            </div>
-                            <div class="form-group">
-                                <label>Category</label>
-                                <select id="brain-cat"></select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Question</label>
-                            <input type="text" id="brain-q" placeholder="e.g., What is patience?">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Answer</label>
-                            <textarea id="brain-a" rows="4" placeholder="Detailed answer..."></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Reference</label>
-                            <input type="text" id="brain-ref" placeholder="e.g., Surah Al-Baqarah">
-                        </div>
-
-                        <div style="display: flex; gap: 1rem;">
-                            <button class="btn-primary" onclick="saveBrainData()">Save Question</button>
-                            <button class="btn-primary btn-danger" onclick="deleteBrainData()">Delete</button>
-                        </div>
-
-                        <div class="data-list" id="brain-list"></div>
-                    </div>
-                </section>
-
+    <!-- Admin Interface -->
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div>
+                <h3>Dashboard</h3>
+                <button class="sidebar-btn active" onclick="loadData('main')">Main Data (Site)</button>
+                <button class="sidebar-btn" onclick="loadData('brain')">Brain Data (Light)</button>
             </div>
+            <div class="sidebar-footer">
+                <button class="sidebar-btn" style="color: #ff4444;" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main class="main-content">
+            <div class="header">
+                <h1 id="page-title">Manage Main Data</h1>
+                <div class="btn-group">
+                    <button class="btn-secondary" onclick="downloadCurrentData()">⬇ Download Updated File</button>
+                    <button class="btn-primary" onclick="openModal('new')">+ Add New Item</button>
+                </div>
+            </div>
+            
+            <div class="table-container">
+                <div id="data-table-container">
+                    <!-- Table injected here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-modal" onclick="if(event.target === this) closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modal-title">Edit Item</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label>ID (Unique Number)</label>
+                <input type="number" id="form-id" placeholder="e.g. 500">
+            </div>
+            
+            <div class="form-group">
+                <label>Name / Title</label>
+                <input type="text" id="form-name" placeholder="e.g. فلسطين">
+            </div>
+
+            <div class="form-group" id="field-level">
+                <label>Level (1-5 for Countries, 0 for Special)</label>
+                <input type="number" id="form-level" placeholder="0">
+            </div>
+
+            <div class="form-group" id="field-category" style="display:none;">
+                <label>Category</label>
+                <select id="form-category">
+                    <!-- Options injected via JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Subtitle</label>
+                <input type="text" id="form-subtitle" placeholder="Short description">
+            </div>
+
+            <div class="form-group">
+                <label>Content (Events / Answer)</label>
+                <textarea id="form-events" rows="6" placeholder="Main content goes here..."></textarea>
+            </div>
+
+            <div class="form-group" id="field-ref">
+                <label>Reference</label>
+                <input type="text" id="form-ref" placeholder="e.g. Surah Al-Baqarah">
+            </div>
+
+            <button onclick="saveItem()">Save Changes</button>
         </div>
     </div>
 
-    <!-- Logic -->
-    <script>
-        // ===== SECURITY =====
-        const PASSWORD = "theone123";
-        let isLoggedIn = false;
+    <!-- External Data Scripts -->
+    <script src="data.js"></script>
+    <script src="data2.js"></script>
 
-        function checkPassword() {
+    <script>
+        // ===== STATE =====
+        let currentMode = 'main'; // 'main' or 'brain'
+        let editingIndex = -1; // -1 for new
+        const CORRECT_PASS = "theone123";
+
+        // ===== AUTH =====
+        function attemptLogin() {
             const input = document.getElementById('password-input').value;
-            if (input === PASSWORD) {
-                isLoggedIn = true;
+            if (input === CORRECT_PASS) {
+                document.body.classList.add('logged-in');
                 document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('admin-dashboard').style.display = 'flex';
-                loadDataFromLocalStorage(); // Load saved drafts if any
+                localStorage.setItem('admin_logged_in', 'true');
+                loadData('main');
             } else {
-                alert("Incorrect Password");
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('password-input').value = '';
             }
         }
 
         function logout() {
-            isLoggedIn = false;
-            location.reload();
+            document.body.classList.remove('logged-in');
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('error-msg').style.display = 'none';
+            localStorage.removeItem('admin_logged_in');
         }
 
-        // ===== DATA STORE =====
-        // Initialize with existing data structure (Empty or defaults)
-        let appData = {
-            countriesData: [],
-            brainCategories: [
-                { id: "social", name: "اجتماعي", icon: "🤝" },
-                { id: "daily", name: "يوميات", icon: "📅" }
-            ],
-            brainData: []
-        };
+        // Check session on load
+        if (localStorage.getItem('admin_logged_in') === 'true') {
+            document.body.classList.add('logged-in');
+            document.getElementById('login-screen').style.display = 'none';
+            loadData('main');
+        }
+        
+        // Enter key login
+        document.getElementById("password-input").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") attemptLogin();
+        });
 
-        // ===== NAVIGATION =====
-        function showSection(id) {
-            document.querySelectorAll('.section-content').forEach(el => el.style.display = 'none');
-            document.getElementById('sec-' + id).style.display = 'block';
+        // ===== DATA MANAGEMENT =====
+        function loadData(type) {
+            currentMode = type;
             
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.target.classList.add('active');
+            // Update UI active state
+            document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+            // The event target might be window if called programmatically, so we find the button
+            const activeBtn = Array.from(document.querySelectorAll('.sidebar-btn')).find(b => b.textContent.toLowerCase().includes(type));
+            if(activeBtn) activeBtn.classList.add('active');
+
+            document.getElementById('page-title').innerText = type === 'main' ? 'Manage Main Data (Site)' : 'Manage Brain Data (Light)';
+            
+            // Toggle fields visibility
+            document.getElementById('field-level').style.display = type === 'main' ? 'block' : 'none';
+            document.getElementById('field-category').style.display = type === 'brain' ? 'block' : 'none';
+            document.getElementById('field-ref').style.display = type === 'brain' ? 'block' : 'none';
+
+            // Populate Category Select for Brain
+            if (type === 'brain') {
+                const sel = document.getElementById('form-category');
+                sel.innerHTML = brainCategories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+            }
+
+            renderTable();
         }
 
-        // ===== MAIN DATA LOGIC =====
-        function renderMainList() {
-            const list = document.getElementById('main-list');
-            list.innerHTML = appData.countriesData.map((d, i) => `
-                <div class="data-item">
-                    <span>[${d.id}] ${d.name} (Lvl: ${d.level})</span>
-                    <div class="data-item-actions">
-                        <button class="btn-xs btn-primary" onclick="editMain(${i})">Edit</button>
-                    </div>
-                </div>
-            `).join('');
+        function renderTable() {
+            const container = document.getElementById('data-table-container');
+            const data = currentMode === 'main' ? countriesData : brainData;
+            
+            let html = `<table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>${currentMode === 'main' ? 'Name' : 'Question'}</th>
+                        <th>${currentMode === 'main' ? 'Level' : 'Category'}</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-            // Update Select
-            const sel = document.getElementById('main-select');
-            sel.innerHTML = '<option value="">-- New Entry --</option>' + 
-            appData.countriesData.map((d, i) => `<option value="${i}">${d.name}</option>`).join('');
+            data.forEach((item, index) => {
+                html += `
+                    <tr>
+                        <td style="font-family: monospace; color: #888;">#${item.id}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${item.name || item.question}
+                        </td>
+                        <td>
+                            <span style="background: #222; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+                                ${item.level !== undefined ? item.level : item.category}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="action-btn" onclick="openModal(${index})">Edit</button>
+                            <button class="action-btn delete" onclick="deleteItem(${index})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
         }
 
-        function editMain(index) {
-            const d = appData.countriesData[index];
-            document.getElementById('main-edit-id').value = index;
-            document.getElementById('main-id').value = d.id;
-            document.getElementById('main-level').value = d.level;
-            document.getElementById('main-name').value = d.name;
-            document.getElementById('main-subtitle').value = d.subtitle || '';
-            document.getElementById('main-events').value = d.events || '';
-            document.getElementById('main-links').value = JSON.stringify(d.links || []);
-            document.getElementById('main-select').value = index;
+        // ===== MODAL LOGIC =====
+        function openModal(index) {
+            editingIndex = index;
+            const modal = document.getElementById('edit-modal');
+            const data = currentMode === 'main' ? countriesData : brainData;
+            
+            // Clear form if new
+            if (index === 'new') {
+                document.getElementById('modal-title').innerText = "Add New Item";
+                document.getElementById('form-id').value = '';
+                document.getElementById('form-name').value = '';
+                document.getElementById('form-level').value = '0';
+                document.getElementById('form-subtitle').value = '';
+                document.getElementById('form-events').value = '';
+                document.getElementById('form-ref').value = '';
+                if(currentMode === 'brain') document.getElementById('form-category').value = brainCategories[0].id;
+            } else {
+                // Fill form if editing
+                const item = data[index];
+                document.getElementById('modal-title').innerText = "Edit Item";
+                document.getElementById('form-id').value = item.id;
+                document.getElementById('form-name').value = item.name || item.question;
+                document.getElementById('form-level').value = item.level || 0;
+                document.getElementById('form-subtitle').value = item.subtitle || '';
+                document.getElementById('form-events').value = item.events || item.answer || '';
+                document.getElementById('form-ref').value = item.reference || '';
+                if(item.category) document.getElementById('form-category').value = item.category;
+            }
+            
+            modal.classList.add('show');
         }
 
-        function loadMainData() {
-            const val = document.getElementById('main-select').value;
-            if (val !== "") editMain(parseInt(val));
-            else clearMainForm();
+        function closeModal() {
+            document.getElementById('edit-modal').classList.remove('show');
         }
 
-        function clearMainForm() {
-            document.getElementById('main-edit-id').value = '';
-            document.getElementById('main-id').value = '';
-            document.getElementById('main-name').value = '';
-            document.getElementById('main-subtitle').value = '';
-            document.getElementById('main-events').value = '';
-            document.getElementById('main-links').value = '';
-        }
-
-        function saveMainData() {
-            const editIndex = document.getElementById('main-edit-id').value;
-            const newItem = {
-                id: parseInt(document.getElementById('main-id').value),
-                level: parseInt(document.getElementById('main-level').value),
-                name: document.getElementById('main-name').value,
-                subtitle: document.getElementById('main-subtitle').value,
-                events: document.getElementById('main-events').value,
-                links: []
-            };
-
-            try {
-                newItem.links = JSON.parse(document.getElementById('main-links').value || "[]");
-            } catch (e) {
-                alert("Invalid JSON in Links field. Use [] for empty.");
+        function saveItem() {
+            const data = currentMode === 'main' ? countriesData : brainData;
+            
+            // Basic Validation
+            const newId = parseInt(document.getElementById('form-id').value);
+            if (!newId) {
+                alert("ID is required and must be a number.");
                 return;
             }
 
-            if (editIndex !== "") {
-                appData.countriesData[parseInt(editIndex)] = newItem;
-            } else {
-                // Check duplicate ID
-                if (appData.countriesData.some(d => d.id === newItem.id)) {
-                    alert("ID already exists! Use a unique ID.");
-                    return;
-                }
-                appData.countriesData.push(newItem);
-            }
-            
-            saveDataToLocalStorage();
-            renderMainList();
-            clearMainForm();
-            alert("Saved to memory! Remember to Download Files.");
-        }
-
-        function deleteMainData() {
-            const editIndex = document.getElementById('main-edit-id').value;
-            if (editIndex !== "") {
-                appData.countriesData.splice(parseInt(editIndex), 1);
-                saveDataToLocalStorage();
-                renderMainList();
-                clearMainForm();
-            }
-        }
-
-        // ===== BRAIN CATEGORY LOGIC =====
-        function renderCatList() {
-            const list = document.getElementById('cat-list');
-            list.innerHTML = appData.brainCategories.map(c => `
-                <div class="data-item">
-                    <span>${c.icon} ${c.name} (${c.id})</span>
-                </div>
-            `).join('');
-            
-            // Update Brain Data Dropdown
-            const sel = document.getElementById('brain-cat');
-            sel.innerHTML = appData.brainCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        }
-
-        function saveCategory() {
-            const id = document.getElementById('cat-id').value;
-            const name = document.getElementById('cat-name').value;
-            const icon = document.getElementById('cat-icon').value;
-            if(!id || !name) return alert("Fill all fields");
-            
-            // Prevent duplicate ID
-            if (appData.brainCategories.some(c => c.id === id)) {
-                return alert("Category ID already exists");
-            }
-
-            appData.brainCategories.push({ id, name, icon });
-            saveDataToLocalStorage();
-            renderCatList();
-            // Clear inputs
-            document.getElementById('cat-id').value = ''; 
-            document.getElementById('cat-name').value = ''; 
-            document.getElementById('cat-icon').value = '';
-        }
-
-        // ===== BRAIN DATA LOGIC =====
-        function renderBrainList() {
-            const list = document.getElementById('brain-list');
-            list.innerHTML = appData.brainData.map((d, i) => `
-                <div class="data-item">
-                    <span>${d.question}</span>
-                    <div class="data-item-actions">
-                        <button class="btn-xs btn-primary" onclick="editBrain(${i})">Edit</button>
-                    </div>
-                </div>
-            `).join('');
-
-            const sel = document.getElementById('brain-select');
-            sel.innerHTML = '<option value="">-- New Question --</option>' + 
-            appData.brainData.map((d, i) => `<option value="${i}">${d.question}</option>`).join('');
-        }
-
-        function editBrain(index) {
-            const d = appData.brainData[index];
-            document.getElementById('brain-edit-id').value = index;
-            document.getElementById('brain-id').value = d.id;
-            document.getElementById('brain-cat').value = d.category;
-            document.getElementById('brain-q').value = d.question;
-            document.getElementById('brain-a').value = d.answer;
-            document.getElementById('brain-ref').value = d.reference;
-            document.getElementById('brain-select').value = index;
-        }
-
-        function loadBrainData() {
-            const val = document.getElementById('brain-select').value;
-            if (val !== "") editBrain(parseInt(val));
-            else clearBrainForm();
-        }
-
-        function clearBrainForm() {
-            document.getElementById('brain-edit-id').value = '';
-            document.getElementById('brain-id').value = '';
-            document.getElementById('brain-q').value = '';
-            document.getElementById('brain-a').value = '';
-            document.getElementById('brain-ref').value = '';
-        }
-
-        function saveBrainData() {
-            const editIndex = document.getElementById('brain-edit-id').value;
             const newItem = {
-                id: parseInt(document.getElementById('brain-id').value),
-                category: document.getElementById('brain-cat').value,
-                question: document.getElementById('brain-q').value,
-                answer: document.getElementById('brain-a').value,
-                reference: document.getElementById('brain-ref').value
+                id: newId,
+                name: document.getElementById('form-name').value,
+                subtitle: document.getElementById('form-subtitle').value,
+                links: []
             };
 
-            if (editIndex !== "") {
-                appData.brainData[parseInt(editIndex)] = newItem;
-            } else {
-                if (appData.brainData.some(d => d.id === newItem.id)) {
-                    alert("ID already exists!");
-                    return;
+            if (currentMode === 'main') {
+                newItem.level = parseInt(document.getElementById('form-level').value);
+                newItem.events = document.getElementById('form-events').value;
+                // Preserve links if editing
+                if (editingIndex !== 'new' && data[editingIndex].links) {
+                    newItem.links = data[editingIndex].links;
                 }
-                appData.brainData.push(newItem);
+            } else {
+                newItem.question = newItem.name; // Map name to question
+                delete newItem.name;
+                newItem.answer = document.getElementById('form-events').value; // Map events to answer
+                delete newItem.events;
+                newItem.reference = document.getElementById('form-ref').value;
+                newItem.category = document.getElementById('form-category').value;
             }
-            
-            saveDataToLocalStorage();
-            renderBrainList();
-            clearBrainForm();
-            alert("Question Saved!");
+
+            if (editingIndex === 'new') {
+                data.push(newItem);
+            } else {
+                data[editingIndex] = newItem;
+            }
+
+            closeModal();
+            renderTable();
+            alert("Saved locally! Remember to click 'Download Updated File' to save your changes to your computer.");
         }
 
-        function deleteBrainData() {
-            const editIndex = document.getElementById('brain-edit-id').value;
-            if (editIndex !== "") {
-                appData.brainData.splice(parseInt(editIndex), 1);
-                saveDataToLocalStorage();
-                renderBrainList();
-                clearBrainForm();
+        function deleteItem(index) {
+            if(confirm("Are you sure you want to delete this item?")) {
+                const data = currentMode === 'main' ? countriesData : brainData;
+                data.splice(index, 1);
+                renderTable();
             }
         }
 
-        // ===== PERSISTENCE & DOWNLOAD =====
-        function saveDataToLocalStorage() {
-            localStorage.setItem('adminData', JSON.stringify(appData));
-        }
+        // ===== EXPORT / DOWNLOAD =====
+        function downloadCurrentData() {
+            let dataStr, fileName;
 
-        function loadDataFromLocalStorage() {
-            const saved = localStorage.getItem('adminData');
-            if (saved) {
-                appData = JSON.parse(saved);
+            if (currentMode === 'main') {
+                // We need to format it nicely, preserving the `levels` object
+                const levelsStr = JSON.stringify(levels, null, 2);
+                const dataStrRaw = JSON.stringify(countriesData, null, 2);
+                const content = `// data.js\n\nconst levels = ${levelsStr};\n\nconst countriesData = ${dataStrRaw};\n\nconst bigEventsData = [];`;
+                dataStr = content;
+                fileName = 'data.js';
+            } else {
+                const catsStr = JSON.stringify(brainCategories, null, 2);
+                const dataStrRaw = JSON.stringify(brainData, null, 2);
+                const content = `// data2.js\n\nconst brainCategories = ${catsStr};\n\nconst brainData = ${dataStrRaw};`;
+                dataStr = content;
+                fileName = 'data2.js';
             }
-            renderAll();
-        }
 
-        function renderAll() {
-            renderMainList();
-            renderCatList();
-            renderBrainList();
-        }
-
-        function downloadAllData() {
-            // Generate data.js content
-            const levels = {
-                1: { title: "المحور الأول: دول الاندماج العضوي", desc: "تطبيع كامل" },
-                2: { title: "المحور الثاني: دول الارتهان الجغرافي", desc: "تبعية القسر" },
-                3: { title: "المحور الثالث: دول التنسيق الوظيفي", desc: "تطبيع الظل" },
-                4: { title: "المحور الرابع: دول الحصانة الشعبية", desc: "خندق الرفض" },
-                5: { title: "المحور الخامس: دول الصدام والسيادة", desc: "محور المواجهة" }
-            };
-            
-            const dataJsContent = `// data.js\nconst levels = ${JSON.stringify(levels, null, 2)};\nconst countriesData = ${JSON.stringify(appData.countriesData, null, 2)};\nconst bigEventsData = [];`;
-            
-            downloadFile(dataJsContent, 'data.js', 'text/javascript');
-
-            // Generate data2.js content
-            const data2JsContent = `// data2.js\nconst brainCategories = ${JSON.stringify(appData.brainCategories, null, 2)};\nconst brainData = ${JSON.stringify(appData.brainData, null, 2)};`;
-            downloadFile(data2JsContent, 'data2.js', 'text/javascript');
-        }
-
-        function downloadFile(content, fileName, contentType) {
-            const a = document.createElement("a");
-            const file = new Blob([content], { type: contentType });
-            a.href = URL.createObjectURL(file);
+            const blob = new Blob([dataStr], { type: "text/javascript" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
             a.download = fileName;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(a.href);
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
-
-        // Initialize
-        renderAll();
-
     </script>
 </body>
 </html>
