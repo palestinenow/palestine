@@ -6,47 +6,29 @@
     <title>Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* CSS VARIABLES */
         :root {
-            --bg: #0d1117;
-            --card: #161b22;
-            --border: #30363d;
-            --text: #c9d1d9;
-            --muted: #8b949e;
-            --accent: #238636;
-            --red: #f85149;
-            --blue: #58a6ff;
+            --bg: #0d1117; --card: #161b22; --border: #30363d;
+            --text: #c9d1d9; --muted: #8b949e;
+            --accent: #238636; --red: #f85149; --blue: #58a6ff;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-            /* FIX: Body is visible by default */
-            display: flex;
-            flex-direction: column;
+            background-color: var(--bg); color: var(--text);
+            height: 100vh; overflow: hidden;
+            display: flex; flex-direction: column;
         }
 
-        /* LOGIN SCREEN */
+        /* LOGIN */
         #login-layer {
-            position: fixed; 
-            inset: 0; 
-            z-index: 9999;
+            position: fixed; inset: 0; z-index: 9999;
             background: #010409;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            /* FIX: Visible by default */
+            display: flex; align-items: center; justify-content: center;
         }
         .login-box {
             background: var(--card); padding: 40px;
-            border: 1px solid var(--border);
-            border-radius: 12px; text-align: center;
-            width: 100%; max-width: 400px;
+            border: 1px solid var(--border); border-radius: 12px;
+            text-align: center; width: 100%; max-width: 400px;
         }
         .login-box h2 { color: var(--accent); margin-bottom: 20px; font-size: 1.5rem; }
         input { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: #0d1117; color: #fff; font-size: 1rem; outline: none; margin-bottom: 15px; }
@@ -54,13 +36,8 @@
         button:hover { filter: brightness(1.1); }
         .err { color: var(--red); font-size: 0.85rem; margin-top: 10px; display: none; }
 
-        /* MAIN APP CONTAINER */
-        /* FIX: Hidden by default until login */
-        #main-app-wrapper {
-            display: none; 
-            height: 100%;
-            flex-direction: column;
-        }
+        /* MAIN APP */
+        #main-app-wrapper { display: none; height: 100%; flex-direction: column; }
         body.logged-in #login-layer { display: none; }
         body.logged-in #main-app-wrapper { display: flex; }
 
@@ -71,48 +48,45 @@
             padding: 0 20px; background: #161b22; flex-shrink: 0;
         }
         .top-bar h1 { font-size: 1rem; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        .top-bar .status { font-size: 0.8rem; background: #30363d; padding: 4px 8px; border-radius: 4px; color: #fff; }
+        .status-badge { font-size: 0.75rem; background: #30363d; padding: 4px 8px; border-radius: 4px; color: #fff; }
         .actions { display: flex; gap: 10px; }
         .btn-sm { padding: 8px 16px; font-size: 0.85rem; width: auto; border-radius: 6px; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-outline:hover { background: rgba(255,255,255,0.05); }
         .btn-danger { background: var(--red); }
         .btn-download { background: #1f6feb; border: none; color: #fff; }
 
-        /* MAIN LAYOUT */
-        .main-container {
-            flex: 1; display: flex; overflow: hidden; height: calc(100vh - 60px);
-        }
+        /* MAIN CONTAINER */
+        .main-container { flex: 1; display: flex; overflow: hidden; height: calc(100vh - 60px); }
 
-        /* LEFT PANEL (LIST) */
-        .left-panel {
-            width: 350px; background: #0d1117;
+        /* SIDEBAR */
+        .sidebar {
+            width: 300px; background: #0d1117;
             border-right: 1px solid var(--border);
             display: flex; flex-direction: column;
         }
-        .list-header { padding: 15px; border-bottom: 1px solid var(--border); }
+        .sidebar-header { padding: 15px; border-bottom: 1px solid var(--border); }
         .tabs { display: flex; gap: 5px; margin-top: 10px; }
         .tab { padding: 6px 12px; font-size: 0.8rem; border-radius: 20px; cursor: pointer; background: transparent; color: var(--muted); border: 1px solid transparent; width: auto; }
         .tab.active { background: var(--card); color: #fff; border-color: var(--border); }
 
         .list-items { flex: 1; overflow-y: auto; padding: 10px; }
         .item-row {
-            padding: 12px 15px; margin-bottom: 5px;
+            padding: 10px 15px; margin-bottom: 5px;
             background: var(--card); border-radius: 6px;
             cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
         .item-row:hover { border-color: #30363d; }
         .item-row.active { border-color: var(--blue); background: #0d1117; }
         .item-row .id { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
-        .item-row .name { font-weight: 600; font-size: 0.95rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .item-row .name { font-weight: 600; font-size: 0.9rem; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* RIGHT PANEL (EDITOR) */
-        .right-panel {
+        /* EDITOR */
+        .editor-area {
             flex: 1; background: var(--bg);
             display: flex; flex-direction: column;
             overflow-y: auto; position: relative;
         }
-        .editor-form { padding: 30px; max-width: 800px; width: 100%; margin: 0 auto; }
+        .form-pad { padding: 30px; max-width: 800px; width: 100%; margin: 0 auto; }
         
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -120,27 +94,24 @@
             width: 100%; background: #0d1117; border: 1px solid var(--border);
             color: #fff; padding: 10px; border-radius: 6px; font-family: 'Inter';
         }
-        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
-            border-color: var(--blue); outline: none;
-        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--blue); outline: none; }
         .form-group textarea { min-height: 150px; resize: vertical; line-height: 1.6; }
         
         .btn-save { position: sticky; bottom: 0; left: 0; width: 100%; padding: 15px; border-radius: 0; font-size: 1rem; margin-top: 20px; }
+        .btn-reset { background: #f0883e; color: #000; }
 
-        /* EMPTY STATE */
         .empty-state { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); text-align: center; flex-direction: column; gap: 10px; }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .main-container { flex-direction: column; }
-            .left-panel { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid var(--border); }
-            .right-panel { height: 60%; }
+            .sidebar { width: 100%; height: 40%; border-right: none; border-bottom: 1px solid var(--border); }
+            .editor-area { height: 60%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN LAYER (Visible First) -->
+    <!-- Login -->
     <div id="login-layer">
         <div class="login-box">
             <h2>Admin Access</h2>
@@ -150,58 +121,49 @@
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER (Hidden Until Login) -->
+    <!-- Main App -->
     <div id="main-app-wrapper">
-        
-        <!-- Top Bar -->
         <div class="top-bar">
             <h1>
-                <span id="page-title">Manage Data</span>
-                <span class="status" id="mode-status">Main Site</span>
+                <span>Admin</span>
+                <span class="status-badge" id="mode-status">Main Site</span>
             </h1>
             <div class="actions">
-                <button class="btn-sm btn-download" onclick="downloadData()">⬇ Download Updated File</button>
+                <button class="btn-sm btn-download" onclick="downloadData()">⬇ Save & Download</button>
                 <button class="btn-sm btn-danger" onclick="logout()">Logout</button>
             </div>
         </div>
 
-        <!-- Main Container -->
         <div class="main-container">
-            <!-- Left: List -->
-            <div class="left-panel">
-                <div class="list-header">
-                    <button class="btn-sm" onclick="newItem()" style="width:100%;">+ Add New Item</button>
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="sidebar-header">
                     <div class="tabs">
                         <div class="tab active" id="tab-main" onclick="switchData('main')">Main Site</div>
                         <div class="tab" id="tab-brain" onclick="switchData('brain')">Brain App</div>
                     </div>
+                    <div style="margin-top:10px; display:flex; gap:5px;">
+                        <button class="btn-sm" onclick="newItem()" style="flex:1;">+ Add New</button>
+                        <button class="btn-sm btn-reset" onclick="resetSession()" style="width:auto; padding:8px 12px;">↻ Reset</button>
+                    </div>
                 </div>
-                <div class="list-items" id="list-container">
-                    <!-- Items injected here -->
-                </div>
+                <div class="list-items" id="list-container"></div>
             </div>
 
-            <!-- Right: Editor -->
-            <div class="right-panel">
-                <div class="empty-state" id="empty-state">
-                    Select an item to edit or create new one
-                </div>
-                <div class="editor-form" id="editor" style="display:none;">
-                    
-                    <div style="display: flex; gap: 15px;">
+            <!-- Editor -->
+            <div class="editor-area">
+                <div class="empty-state" id="empty-state">Select an item to edit</div>
+                <div class="form-pad" id="editor" style="display:none;">
+                    <div style="display:flex; gap:15px;">
                         <div class="form-group" style="flex:1;">
-                            <label>ID (Unique Number)</label>
+                            <label>ID</label>
                             <input type="number" id="form-id">
                         </div>
                         <div class="form-group" id="box-level" style="flex:1;">
-                            <label>Level (0-5)</label>
+                            <label>Level</label>
                             <select id="form-level">
-                                <option value="0">0 (Special)</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
+                                <option value="0">0 (Special)</option><option value="1">1</option><option value="2">2</option>
+                                <option value="3">3</option><option value="4">4</option><option value="5">5</option>
                             </select>
                         </div>
                         <div class="form-group" id="box-cat" style="flex:1; display:none;">
@@ -211,7 +173,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="label-name">Name / Question</label>
+                        <label id="label-name">Name</label>
                         <input type="text" id="form-name">
                     </div>
 
@@ -221,7 +183,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="label-content">Content (Events / Answer)</label>
+                        <label id="label-content">Content</label>
                         <textarea id="form-content"></textarea>
                     </div>
 
@@ -230,25 +192,23 @@
                         <input type="text" id="form-ref">
                     </div>
                     
-                    <button class="btn-save" onclick="saveChanges()">Save Changes</button>
+                    <button class="btn-save" onclick="saveChanges()">Save Changes Locally</button>
                     <br><br>
-                    <button class="btn-sm btn-danger" onclick="deleteCurrentItem()" style="width:100%; opacity:0.7;">Delete This Item</button>
+                    <button class="btn-sm btn-danger" onclick="deleteCurrentItem()" style="width:100%; opacity:0.7;">Delete Item</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Connect to Data -->
     <script src="data.js"></script>
     <script src="data2.js"></script>
-
     <script>
         const PASS = "theone123";
         let mode = 'main';
         let currentData = [];
         let currentIdx = -1;
 
-        // ===== AUTH =====
+        // AUTH
         function login() {
             if (document.getElementById('pass').value === PASS) {
                 document.body.classList.add('logged-in');
@@ -256,60 +216,41 @@
                 init();
             } else document.getElementById('err').style.display = 'block';
         }
+        function logout() { localStorage.removeItem('auth'); location.reload(); }
         
-        function logout() {
-            localStorage.removeItem('auth');
-            location.reload();
-        }
+        if (localStorage.getItem('auth') === '1') { document.body.classList.add('logged-in'); init(); }
+        document.getElementById("pass").addEventListener("keyup", e => { if (e.key === "Enter") login(); });
 
-        // Auto-login check
-        if (localStorage.getItem('auth') === '1') {
-            document.body.classList.add('logged-in');
-            init();
-        }
-
-        // Enter key listener
-        document.getElementById("pass").addEventListener("keyup", function(event) {
-            if (event.key === "Enter") login();
-        });
-
-        // ===== INIT =====
+        // INIT
         function init() {
-            // Populate categories for Brain mode
             const sel = document.getElementById('form-cat');
-            if (typeof brainCategories !== 'undefined') {
-                sel.innerHTML = brainCategories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
-            }
+            if (typeof brainCategories !== 'undefined') sel.innerHTML = brainCategories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
             switchData('main');
         }
 
         function switchData(m) {
-            mode = m;
-            currentIdx = -1;
-            
-            // UI Updates
+            mode = m; currentIdx = -1;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + m).classList.add('active');
             document.getElementById('mode-status').innerText = m === 'main' ? 'Main Site' : 'Brain App';
-            
-            // Show/Hide specific fields
             document.getElementById('box-level').style.display = m === 'main' ? 'block' : 'none';
             document.getElementById('box-cat').style.display = m === 'brain' ? 'block' : 'none';
             document.getElementById('box-ref').style.display = m === 'brain' ? 'block' : 'none';
-
-            // Change Labels
             document.getElementById('label-name').innerText = m === 'main' ? 'Name' : 'Question';
-            document.getElementById('label-content').innerText = m === 'main' ? 'Events (Content)' : 'Answer';
-
-            renderList();
-            closeEditor();
+            document.getElementById('label-content').innerText = m === 'main' ? 'Events' : 'Answer';
+            renderList(); closeEditor();
         }
 
-        // ===== LIST =====
+        function resetSession() {
+            if(confirm("This will reload the original data from your server. All unsaved local changes will be lost. Continue?")) {
+                location.reload();
+            }
+        }
+
+        // LIST
         function renderList() {
             const list = document.getElementById('list-container');
             currentData = mode === 'main' ? countriesData : brainData;
-            
             list.innerHTML = currentData.map((item, i) => `
                 <div class="item-row ${i === currentIdx ? 'active' : ''}" onclick="loadItem(${i})">
                     <div class="id">ID: ${item.id}</div>
@@ -318,93 +259,53 @@
             `).join('');
         }
 
-        // ===== EDITOR =====
-        function newItem() {
-            currentIdx = -1;
-            loadItem(-1);
-        }
-
+        // EDITOR
+        function newItem() { currentIdx = -1; loadItem(-1); }
         function loadItem(idx) {
-            currentIdx = idx;
-            renderList();
-
-            const editor = document.getElementById('editor');
-            const empty = document.getElementById('empty-state');
-            
-            editor.style.display = 'block';
-            empty.style.display = 'none';
-
+            currentIdx = idx; renderList();
+            document.getElementById('editor').style.display = 'block';
+            document.getElementById('empty-state').style.display = 'none';
             const item = idx === -1 ? {} : currentData[idx];
-
             document.getElementById('form-id').value = item.id || '';
             document.getElementById('form-name').value = item.name || item.question || '';
             document.getElementById('form-level').value = item.level || 0;
-            
-            if(mode === 'brain') {
-                document.getElementById('form-cat').value = item.category || (brainCategories[0] ? brainCategories[0].id : 'social');
-            }
-
+            if(mode === 'brain') document.getElementById('form-cat').value = item.category || 'social';
             document.getElementById('form-sub').value = item.subtitle || '';
             document.getElementById('form-content').value = item.events || item.answer || '';
             document.getElementById('form-ref').value = item.reference || '';
         }
-
-        function closeEditor() {
-            document.getElementById('editor').style.display = 'none';
-            document.getElementById('empty-state').style.display = 'flex';
-        }
+        function closeEditor() { document.getElementById('editor').style.display = 'none'; document.getElementById('empty-state').style.display = 'flex'; }
 
         function saveChanges() {
-            const newItem = {
-                id: parseInt(document.getElementById('form-id').value),
-                subtitle: document.getElementById('form-sub').value,
-            };
-
+            const newItem = { id: parseInt(document.getElementById('form-id').value), subtitle: document.getElementById('form-sub').value };
             if (mode === 'main') {
                 newItem.name = document.getElementById('form-name').value;
                 newItem.level = parseInt(document.getElementById('form-level').value);
                 newItem.events = document.getElementById('form-content').value;
-                if (currentIdx !== -1 && currentData[currentIdx].links) {
-                    newItem.links = currentData[currentIdx].links;
-                } else {
-                    newItem.links = [];
-                }
+                if (currentIdx !== -1 && currentData[currentIdx].links) newItem.links = currentData[currentIdx].links;
+                else newItem.links = [];
             } else {
                 newItem.question = document.getElementById('form-name').value;
                 newItem.answer = document.getElementById('form-content').value;
                 newItem.reference = document.getElementById('form-ref').value;
                 newItem.category = document.getElementById('form-cat').value;
             }
-
-            if (!newItem.id) return alert("ID is required.");
-
-            if (currentIdx === -1) {
-                currentData.push(newItem);
-                currentIdx = currentData.length - 1;
-                alert("Added! Click 'Download' to save.");
-            } else {
-                currentData[currentIdx] = newItem;
-                alert("Updated! Click 'Download' to save.");
-            }
-            
+            if (!newItem.id) return alert("ID required.");
+            if (currentIdx === -1) { currentData.push(newItem); currentIdx = currentData.length - 1; alert("Added locally!"); }
+            else { currentData[currentIdx] = newItem; alert("Updated locally!"); }
             renderList();
         }
 
         function deleteCurrentItem() {
             if (currentIdx === -1) return;
-            if(confirm("Delete this item?")) {
-                currentData.splice(currentIdx, 1);
-                currentIdx = -1;
-                renderList();
-                closeEditor();
-                alert("Deleted! Click 'Download' to save.");
+            if(confirm("Delete?")) {
+                currentData.splice(currentIdx, 1); currentIdx = -1; renderList(); closeEditor();
             }
         }
 
-        // ===== DOWNLOAD =====
+        // DOWNLOAD
         function downloadData() {
             let content, filename;
-            
             if (mode === 'main') {
                 content = `// data.js\n\nconst levels = ${JSON.stringify(levels, null, 2)};\n\nconst countriesData = ${JSON.stringify(countriesData, null, 2)};\n\nconst bigEventsData = [];`;
                 filename = 'data.js';
@@ -412,7 +313,6 @@
                 content = `// data2.js\n\nconst brainCategories = ${JSON.stringify(brainCategories, null, 2)};\n\nconst brainData = ${JSON.stringify(brainData, null, 2)};`;
                 filename = 'data2.js';
             }
-
             const blob = new Blob([content], {type: 'text/javascript'});
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
